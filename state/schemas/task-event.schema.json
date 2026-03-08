@@ -1,0 +1,155 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://openclaw.local/schemas/task-event.schema.json",
+  "title": "Task Event (JSONL line schema)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["ts", "kind", "id", "payload"],
+  "properties": {
+    "ts": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "kind": {
+      "type": "string",
+      "enum": ["add", "attach", "done", "fail", "remove"]
+    },
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "payload": {
+      "type": "object"
+    }
+  },
+  "$defs": {
+    "taskStatus": {
+      "type": "string",
+      "enum": ["pending", "running", "retrying"]
+    },
+    "taskEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "taskId",
+        "description",
+        "project",
+        "projectPath",
+        "acpSessionKey",
+        "threadId",
+        "startedAt",
+        "status"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "taskId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "project": {
+          "type": "string",
+          "minLength": 1
+        },
+        "projectPath": {
+          "type": "string",
+          "minLength": 1
+        },
+        "acpSessionKey": {
+          "type": "string",
+          "minLength": 1
+        },
+        "threadId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "startedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "status": {
+          "$ref": "#/$defs/taskStatus"
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "enum": ["add", "attach", "remove"]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "payload": {
+            "$ref": "#/$defs/taskEntry"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "done"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "payload": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["commitHash", "task"],
+            "properties": {
+              "commitHash": {
+                "type": "string",
+                "minLength": 1
+              },
+              "task": {
+                "$ref": "#/$defs/taskEntry"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "fail"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "payload": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["reason", "task"],
+            "properties": {
+              "reason": {
+                "type": "string",
+                "minLength": 1
+              },
+              "task": {
+                "$ref": "#/$defs/taskEntry"
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

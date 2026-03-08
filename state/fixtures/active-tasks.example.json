@@ -1,0 +1,15 @@
+{
+  "tasks": [
+    {
+      "id": "smb-scheduler-blue-T021",
+      "taskId": "T021",
+      "description": "Implement customer self-onboarding endpoint",
+      "project": "smb-scheduler-blue",
+      "projectPath": "/home/simon/.openclaw/workspace-builder/projects/smb-scheduler-blue",
+      "acpSessionKey": "pending",
+      "threadId": "1477626882169245828",
+      "startedAt": "2026-03-08T17:20:00Z",
+      "status": "pending"
+    }
+  ]
+}

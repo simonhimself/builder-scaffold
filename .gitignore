@@ -1,0 +1,24 @@
+# OS noise
+.DS_Store
+._*
+
+# Runtime/ephemeral state
+active-tasks.json
+task-events.jsonl
+.openclaw/
+cron/
+logs/
+tmp/
+memory/
+
+# Secrets
+secrets/
+.env
+*.pem
+*.key
+*.token
+
+# Backup noise
+*.bak
+*.bak-*
+scripts/backups/
