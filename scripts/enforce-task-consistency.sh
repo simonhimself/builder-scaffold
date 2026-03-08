@@ -90,7 +90,7 @@ def section_quality(block: str):
         h = heading_name(line)
         if h:
             cur = h
-            val = line.split(':', 1)[1].strip() if ':' in line else ''
+            val = line.split(':', 1)[1].strip().replace('**', '').strip() if ':' in line else ''
             if val:
                 sections[cur].append(val)
             continue
