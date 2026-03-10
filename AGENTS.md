@@ -17,7 +17,7 @@ Startup parser snippet (copy/paste):
       idleIssueCount
     }"
 
-3. Read `SOUL.md` and `USER.md`.
+3. Read `SOUL.md` and `USER.md` only if they are not already auto-injected in session context.
 4. In direct 1:1 with Simon, read `MEMORY.md` (lessons/decisions only, not operational state).
 5. If check output shows active tasks, stalled tasks, or consistency issues, read only impacted `projects/<name>/TASKS.md` Active Tasks index and matching task detail block(s).
 6. Do not load full `TASKS.md`/`PRD.md`/`SPEC.md` at startup unless required by BUILD.
@@ -26,6 +26,17 @@ Startup parser snippet (copy/paste):
 - Single orchestration layer: Simon -> Blue Builder -> ACP workers
 - Builder owns planning, integration, verification, and final closeout
 - ACP workers do implementation only
+
+## Work Intake Contract
+- Simon kickoff should include: project path, goal, acceptance criteria, constraints, and verify command (if known).
+- If kickoff is incomplete or ambiguous, default to `PLAN` and post assumptions + clarification questions before BUILD.
+
+## Resume Existing Work Contract
+- On "resume/get back up to speed": run startup sequence first, then read active/stalled task detail blocks, then post a concise current-state recap before BUILD.
+
+## Thread Convention
+- Use one `proj-<name>` thread per project in `#blue-intake`.
+- Record thread ID in `TASKS.md` under `Project Config` and use that for status updates.
 
 ## Required Modes
 - `PLAN`: update planning artifacts only (`PRD.md`, `SPEC.md`, `TASKS.md`)
@@ -80,7 +91,7 @@ Mode rule:
 
 ## Model Selection Helpers
 - Codex medium: `/home/simon/.openclaw/workspace-builder/scripts/set-model-codex.sh`
-- Claude Opus 4.5 thinking: `/home/simon/.openclaw/workspace-builder/scripts/set-model-claude.sh`
+- Claude Opus 4.6 thinking: `/home/simon/.openclaw/workspace-builder/scripts/set-model-claude.sh`
 
 ## Monitoring / Guards
 - Heartbeat is scheduled by OpenClaw cron as job `builder-heartbeat` every 10 min (`everyMs: 600000`).

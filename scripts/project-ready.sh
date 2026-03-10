@@ -130,13 +130,16 @@ for line in block.splitlines():
     h = heading_name(line)
     if h:
         cur = h
-        val = line.split(':',1)[1].strip() if ':' in line else ''
+        val = line.split(':',1)[1].strip().replace('**', '').strip() if ':' in line else ''
         if val:
             sections[cur].append(val)
         continue
+    st = line.strip()
+    if re.match(r'^-\s+\*\*[^*]+:\*\*', st) or re.match(r'^-\s+[A-Z][A-Za-z0-9 /()_-]{1,60}:\s*', st):
+        cur = None
+        continue
     if cur is None:
         continue
-    st = line.strip()
     if st.startswith('- '):
         sections[cur].append(st[2:].strip())
 

@@ -31,7 +31,7 @@
 
 ## Model Switch Helpers (ACP)
 - Codex medium: /home/simon/.openclaw/workspace-builder/scripts/set-model-codex.sh
-- Claude Opus 4.5 thinking: /home/simon/.openclaw/workspace-builder/scripts/set-model-claude.sh
+- Claude Opus 4.6 thinking: /home/simon/.openclaw/workspace-builder/scripts/set-model-claude.sh
 - Pattern: run one helper first, then spawn ACP one-shot.
 
 ## Auth (Builder-relevant)

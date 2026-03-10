@@ -92,12 +92,12 @@ python3 -c 'import json; from pathlib import Path; p=Path.home()/".config"/"open
 npx -y opencode-ai debug config
 ```
 
-### Switch to Claude Opus 4.5 (medium-like)
+### Switch to Claude Opus 4.6 (medium-like)
 
 Anthropic does not use OpenAI-style `reasoningEffort=medium`. Use thinking budget as an equivalent control.
 
 ```bash
-python3 -c 'import json; from pathlib import Path; p=Path.home()/".config"/"opencode"/"opencode.json"; o=json.loads(p.read_text()); o["model"]="anthropic/claude-opus-4-5"; o.setdefault("provider",{}).setdefault("anthropic",{}).setdefault("models",{}).setdefault("claude-opus-4-5",{}).setdefault("options",{})["thinking"]={"type":"enabled","budgetTokens":8000}; p.write_text(json.dumps(o,indent=2)+"\n")'
+python3 -c 'import json; from pathlib import Path; p=Path.home()/".config"/"opencode"/"opencode.json"; o=json.loads(p.read_text()); o["model"]="anthropic/claude-opus-4-6"; o.setdefault("provider",{}).setdefault("anthropic",{}).setdefault("models",{}).setdefault("claude-opus-4-6",{}).setdefault("options",{})["thinking"]={"type":"enabled","budgetTokens":8000}; p.write_text(json.dumps(o,indent=2)+"\n")'
 npx -y opencode-ai debug config
 ```
 
@@ -299,6 +299,6 @@ grep -RniE "AcpRuntimeError|permission|timeout|usage limit|overloaded|rate_limit
   - Updated ACP router skill defaults to one-shot orchestration (`thread: false`, `mode: run`).
   - Verified OpenAI and Anthropic OAuth credentials present.
   - Validated direct OpenCode ACP and blue-builder orchestrator ACP path with OpenAI model.
-  - Validated Claude path by temporarily switching model to `anthropic/claude-opus-4-5` with thinking `{type: enabled, budgetTokens: 8000}` and running both direct ACP and blue-builder artifact tests.
+  - Validated Claude path by temporarily switching model to `anthropic/claude-opus-4-6` with thinking `{type: enabled, budgetTokens: 8000}` and running both direct ACP and blue-builder artifact tests.
   - Added `opencode` to `tools.agentToAgent.allow` and confirmed gateway restart.
   - Confirmed that direct text readback still fails in current webchat context because thread-bound ACP sessions are unavailable there.

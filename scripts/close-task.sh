@@ -87,15 +87,19 @@ for line in block.splitlines():
     h = heading_name(line)
     if h:
         current = h
-        value = line.split(':', 1)[1].strip() if ':' in line else ''
+        value = line.split(':', 1)[1].strip().replace('**', '').strip() if ':' in line else ''
         if value:
             sections[current].append(value)
+        continue
+
+    st = line.strip()
+    if re.match(r'^-\s+\*\*[^*]+:\*\*', st) or re.match(r'^-\s+[A-Z][A-Za-z0-9 /()_-]{1,60}:\s*', st):
+        current = None
         continue
 
     if current is None:
         continue
 
-    st = line.strip()
     if re.match(r'^-\s+\[\s\]\s+', st):
         if current in unchecked:
             unchecked[current] += 1
@@ -116,7 +120,7 @@ if not evidence_entries:
 else:
     import re
     def is_placeholder(entry: str) -> bool:
-        e = entry.strip().lower().strip('`')
+        e = entry.strip().replace('**', '').lower().strip('`')
         patterns = [
             r'^_?pending_?$',
             r'^\(?(fill|fill at review/done|fill at done)\)?$',

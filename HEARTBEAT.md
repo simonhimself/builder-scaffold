@@ -8,8 +8,8 @@
 
 ## Runtime Behavior
 - Heartbeat runs: `bash /home/simon/.openclaw/workspace-builder/scripts/check.sh`.
-- If `hasActiveTasks` is `false`, it should return `NO_REPLY` (silent when idle).
-- If active or stalled work exists, post compact status to Blue status channel.
+- Early exit (`NO_REPLY`) only when all are true: `hasActiveTasks == false`, `consistencyIssueCount == 0`, and `idleIssueCount == 0`.
+- Otherwise, post compact status to Blue status channel (including drift sections when present).
 
 ## Guardrails
 - Do not create duplicate heartbeat/watchdog cron jobs unless Simon explicitly asks.

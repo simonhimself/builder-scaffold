@@ -83,6 +83,13 @@ copy_root_doc() {
   local dest="$DEST_ROOT/$name"
 
   if [ ! -f "$src" ]; then
+    if [ -f "$dest" ]; then
+      if [ "$DRY_RUN" -eq 1 ]; then
+        echo "DRY-RUN remove $dest (missing in source)"
+      else
+        rm -f "$dest"
+      fi
+    fi
     return 0
   fi
 

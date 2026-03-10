@@ -94,9 +94,12 @@ def section_quality(block: str):
             if val:
                 sections[cur].append(val)
             continue
+        st = line.strip()
+        if re.match(r'^-\s+\*\*[^*]+:\*\*', st) or re.match(r'^-\s+[A-Z][A-Za-z0-9 /()_-]{1,60}:\s*', st):
+            cur = None
+            continue
         if cur is None:
             continue
-        st = line.strip()
         if re.match(r'^-\s+\[\s\]\s+', st):
             if cur in unchecked:
                 unchecked[cur] += 1

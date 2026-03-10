@@ -69,6 +69,19 @@ ARCHIVE_NAME="profile-${TS}.tar.zst"
 ARCHIVE_PATH="$BACKUP_DEST/$ARCHIVE_NAME"
 CHECKSUM_PATH="$ARCHIVE_PATH.sha256"
 MANIFEST_PATH="$BACKUP_DEST/profile-${TS}.manifest.json"
+ARCHIVE_TMP="$BACKUP_DEST/.${ARCHIVE_NAME}.tmp"
+FINALIZED=0
+TMP_EXCLUDES=""
+
+cleanup() {
+  if [ -n "${TMP_EXCLUDES:-}" ] && [ -f "$TMP_EXCLUDES" ]; then
+    rm -f "$TMP_EXCLUDES"
+  fi
+  if [ "${FINALIZED:-0}" -ne 1 ] && [ -n "${ARCHIVE_TMP:-}" ] && [ -f "$ARCHIVE_TMP" ]; then
+    rm -f "$ARCHIVE_TMP"
+  fi
+}
+trap cleanup EXIT
 
 SOURCE_REL=(
   ".openclaw"
@@ -113,8 +126,9 @@ cat > "$TMP_EXCLUDES" <<X
 ._*
 X
 
-tar --exclude-from="$TMP_EXCLUDES" -C /home/simon --zstd -cf "$ARCHIVE_PATH" "${EXISTING_SOURCES[@]}"
-rm -f "$TMP_EXCLUDES"
+tar --warning=no-file-changed --exclude-from="$TMP_EXCLUDES" -C /home/simon --zstd -cf "$ARCHIVE_TMP" "${EXISTING_SOURCES[@]}"
+mv "$ARCHIVE_TMP" "$ARCHIVE_PATH"
+FINALIZED=1
 
 CHECKSUM="$(sha256sum "$ARCHIVE_PATH" | awk '{print $1}')"
 printf '%s  %s\n' "$CHECKSUM" "$ARCHIVE_NAME" > "$CHECKSUM_PATH"

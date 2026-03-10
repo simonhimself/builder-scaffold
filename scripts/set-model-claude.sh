@@ -14,12 +14,12 @@ if p.exists():
 else:
     o = {"$schema": "https://opencode.ai/config.json"}
 
-o["model"] = "anthropic/claude-opus-4-5"
+o["model"] = "anthropic/claude-opus-4-6"
 opts = (
     o.setdefault("provider", {})
      .setdefault("anthropic", {})
      .setdefault("models", {})
-     .setdefault("claude-opus-4-5", {})
+     .setdefault("claude-opus-4-6", {})
      .setdefault("options", {})
 )
 opts["thinking"] = {"type": "enabled", "budgetTokens": 8000}
@@ -30,4 +30,4 @@ print("thinking:", opts.get("thinking"))
 PY
 
 npx -y opencode-ai debug config | sed -n "1,140p"
-echo "[ok] OpenCode default set to anthropic/claude-opus-4-5 (thinking budget 8000)"
+echo "[ok] OpenCode default set to anthropic/claude-opus-4-6 (thinking budget 8000)"
