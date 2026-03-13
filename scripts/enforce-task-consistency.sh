@@ -95,7 +95,7 @@ def section_quality(block: str):
                 sections[cur].append(val)
             continue
         st = line.strip()
-        if re.match(r'^-\s+\*\*[^*]+:\*\*', st) or re.match(r'^-\s+[A-Z][A-Za-z0-9 /()_-]{1,60}:\s*', st):
+        if re.match(r'^-\s+\*\*(Final Commit|Final Status|Risks/Todos|Goal|Scope|Owner|Depends on|Blocked by)\s*:\*\*', st) or re.match(r'^-\s+(Final Commit|Final Status|Risks/Todos|Goal|Scope|Owner|Depends on|Blocked by)\s*:\s*', st):
             cur = None
             continue
         if cur is None:
