@@ -118,7 +118,6 @@ evidence_entries = [x.strip() for x in sections['evidence'] if x.strip()]
 if not evidence_entries:
     issues.append('Verification Evidence is empty')
 else:
-    import re
     def is_placeholder(entry: str) -> bool:
         e = entry.strip().replace('**', '').lower().strip('`')
         patterns = [
