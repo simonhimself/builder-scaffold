@@ -4,8 +4,9 @@
 Deterministic orchestration for Builder-owned ACP execution.
 
 ## Session Selection
-- **Default for Builder workspace:** one-shot implementation/task execution with `runtime="acp"`, `mode="run"`, `thread=false`
-- Persistent thread-bound ACP sessions: use only when explicitly requested for follow-up conversational work (`mode="session"`, `thread=true`)
+- **Default for Builder workspace:** per-task persistent ACP session with `runtime="acp"`, `agentId="codex"`, `mode="session"`, `thread=true`
+- Put the full initial task brief in `sessions_spawn.task` (atomic spawn+brief); then keep follow-up turns in the same ACP session via `sessions_send(sessionKey, ...)` until task closure.
+- One-shot runs (`mode="run"`, `thread=false`) are **not** the Builder default — use only for quick exploratory probes outside of task context.
 
 ## Spawn Contract (include in every worker task)
 Require worker to return:

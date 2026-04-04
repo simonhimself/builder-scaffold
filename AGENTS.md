@@ -67,35 +67,46 @@ Mode rule:
 - Registry fail: `bash scripts/task-registry.sh fail <id> "<reason>"`
 - Drift check: `bash scripts/check.sh`
 
-## ACP Spawn Contract (Required)
-1. Add task to registry first (status `pending`)
-2. Post `🔨 [T-ID] - [scope]` in project thread
-3. Spawn one-shot ACP: `sessions_spawn(runtime:"acp", mode:"run", thread:false)`
-4. Attach real ACP session key via registry `attach`
-5. Send full task brief including: task id, relevant files, current git log, TASKS entry, PRD/SPEC constraints (if present), acceptance criteria, and verify command.
+## Subagent Execution Contract (Required)
+Goal: Simon works with Builder. Builder delegates scoped BUILD work to **one-shot subagent runs** (no ACP).
 
-## ACP Failure Contract (Required)
-- If spawn not accepted / no session key -> `task-registry.sh fail` + notify Simon
-- If ACP returns turn/runtime/quota/auth failure or immediate disconnect with no commit -> `task-registry.sh fail` + concise failure summary
-- Never leave known-failed tasks in active registry
-- Retry once with explicit re-brief; second failure escalates to Simon
+1. Add task to registry first (status `pending`).
+2. Post `🔨 [T-ID] - [scope]` in the project thread (recommended).
+3. Spawn a one-shot subagent run in the project cwd:
 
-## ACP Completion Contract (Required)
-1. Resolve candidate commit from project git log
-2. Manual `done` edits in TASKS are invalid; `close-task.sh` is the only supported close path.
-3. Run atomic close (mandatory):
-   - `bash scripts/close-task.sh <projectPath> <taskId> <commitHash> [verifyCommand]`
-4. If close fails, re-brief and retry once; then escalate
-5. Post `✅ [T-ID] - [summary, commit hash, verify result]`
-6. Declare `READY_FOR_NEXT_TASK`
+   `sessions_spawn(runtime:"subagent", mode:"run", cwd:<projectPath>, task:"<FULL BRIEF>", model:"codex", thinking:"medium", runTimeoutSeconds:1800)`
+
+   Notes:
+   - Embed the **full brief** in the `task` field (treat as atomic).
+   - The returned `childSessionKey` is the worker session identifier.
+
+4. Attach the returned session key via registry `attach`.
+5. Wait for the worker completion announce.
+   - Completion announce is **not authoritative**; proof is git + verify evidence.
+6. Resolve the candidate commit hash from the project git log.
+7. Run `bash scripts/verify.sh <projectPath> [verifyCommand]`.
+8. Run atomic close: `bash scripts/close-task.sh <projectPath> <taskId> <commitHash> [verifyCommand]`.
+9. Post `✅ [T-ID] - [summary, commit hash, verify result]` in the project thread.
+10. Declare `READY_FOR_NEXT_TASK`.
+
+### Subagent Failure Contract (Required)
+- If spawn not accepted / no child session key -> `task-registry.sh fail` + notify Simon.
+- If the worker times out or errors before producing a usable commit -> `task-registry.sh fail` + concise failure summary.
+- Retry once with a tighter re-brief; second failure escalates to Simon.
+- Never leave known-failed tasks in active registry.
+
+### Subagent Hygiene
+- Subagent runs are one-shot; no explicit “close session” step is required.
+- Prefer `cleanup:"keep"` (default) while we’re stabilizing so transcripts remain for debugging.
 
 ## Model Selection Helpers
-- Codex medium: `/home/simon/.openclaw/workspace-builder/scripts/set-model-codex.sh`
-- Claude Opus 4.6 thinking: `/home/simon/.openclaw/workspace-builder/scripts/set-model-claude.sh`
+- Default worker model: `openai-codex/gpt-5.3-codex` (alias `codex`)
+- Default worker thinking: `medium`
 
 ## Monitoring / Guards
-- Heartbeat is scheduled by OpenClaw cron as job `builder-heartbeat` every 10 min (`everyMs: 600000`).
-- Heartbeat source of truth: `/home/simon/.openclaw/cron/jobs.json` (not Linux `crontab -l`).
+- Heartbeat is scheduled by user systemd timer `builder-heartbeat-sentinel.timer` every 10 min.
+- Heartbeat source of truth: `/home/simon/.config/systemd/user/builder-heartbeat-sentinel.{service,timer}`.
+- OpenClaw cron `builder-heartbeat` must remain disabled to prevent duplicate token burn.
 - Pre-push consistency gate: `scripts/enforce-task-consistency.sh <projectPath>`
 - Install hooks across repos: `bash scripts/install-hooks.sh --all`
 

@@ -35,15 +35,15 @@ Use this test before every BUILD slice:
 
 ## ACP Spawn Profile (this workspace)
 
-- `runtime: "acp"`
-- `mode: "run"`
-- `thread: false`
-- Registry first (`active-tasks.json` active inventory), then 🔨 post, then spawn
+- `runtime: "acp"`, `agentId: "codex"`, `mode: "session"`, `thread: true`
+- Registry first (add as `pending`), then 🔨 post, then spawn
 - Attach real session key via `bash scripts/task-registry.sh attach <id> <sessionKey>`
+- Put full initial brief in `sessions_spawn.task` at spawn time; use `sessions_send(sessionKey, ...)` for follow-ups only
 - Verify completion via `git log` + `bash scripts/verify.sh <projectPath>`
 - Close atomically via `bash scripts/close-task.sh <projectPath> <taskId> <commitHash>` (updates TASKS.md + removes from active inventory)
+- Close ACP session after task: `acpx codex sessions close <sessionKey>`
 
 ## Notes
 
-- One-shot ACP runs are intentional here to avoid Discord thread clutter.
-- Codebase (git + project artifacts) is the persistent state between worker runs.
+- Persistent sessions (not one-shot) are the default to allow mid-task steering and reliable follow-up.
+- Codebase (git + project artifacts) is the persistent state between sessions.

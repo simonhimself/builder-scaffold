@@ -1,4 +1,4 @@
-# OpenClaw ACP + OpenCode Runbook (VPS)
+# OpenClaw ACP + Codex Runbook (VPS)
 
 This document describes the working ACP orchestration setup for `simon@openclaw-vps`, how to validate it, and how to recover when it breaks.
 
@@ -6,9 +6,10 @@ This document describes the working ACP orchestration setup for `simon@openclaw-
 
 - OpenClaw gateway runs as systemd user service on VPS.
 - ACP backend is `acpx`.
-- Default ACP agent is `opencode`.
-- OpenCode default model is `openai/gpt-5.3-codex` with medium reasoning effort.
-- Blue-builder orchestrates ACP with one-shot runs by default (`thread: false`, `mode: run`) unless explicitly asked for persistent thread sessions.
+- Default ACP agent is `codex` (via `@zed-industries/codex-acp`, authenticated with **ChatGPT Plus OAuth**).
+- Codex default model is `gpt-5.3-codex` with medium reasoning effort (set in `~/.codex/config.toml`).
+- Blue-builder orchestrates ACP with **per-task persistent sessions by default** (`agentId: "codex"`, `mode: "session"`, `thread: true`). One-shot runs (`mode: run`, `thread: false`) are reserved for quick exploratory probes only.
+- **Post-spawn required:** `acpx codex set-mode full-access --session <key>` before sending work (codex-acp defaults to read-only mode).
 
 ## Current canonical config locations
 
@@ -28,18 +29,25 @@ In `~/.openclaw/openclaw.json`:
 ```json
 {
   "acp": {
-    "defaultAgent": "opencode"
+    "defaultAgent": "codex"
+  },
+  "plugins": {
+    "entries": {
+      "acpx": {
+        "config": {
+          "permissionMode": "approve-all",
+          "nonInteractivePermissions": "deny",
+          "cwd": "/home/simon/.openclaw/workspace-builder"
+        }
+      }
+    }
   }
 }
 ```
 
-Important: `plugins.entries.acpx.config.permissionMode` must be one of:
+**Critical:** `nonInteractivePermissions` must be `"deny"` (NOT `"fail"`). `"fail"` causes silent session crashes on any permission prompt in non-interactive mode.
 
-- `approve-all`
-- `approve-reads`
-- `deny-all`
-
-(`auto` is invalid and causes gateway config failure.)
+`permissionMode` must be one of: `approve-all`, `approve-reads`, `deny-all`. (`auto` is invalid.)
 
 ### 2) ACPX defaults
 
@@ -47,10 +55,43 @@ In `~/.acpx/config.json`:
 
 ```json
 {
-  "defaultAgent": "opencode",
+  "defaultAgent": "codex",
   "defaultPermissions": "approve-all",
-  "nonInteractivePermissions": "deny"
+  "nonInteractivePermissions": "deny",
+  "agents": {
+    "codex": {
+      "command": "/home/simon/.local/bin/codex-acp-oauth"
+    }
+  },
+  "auth": {
+    "chatgpt": "<JWT token from ChatGPT Plus OAuth>"
+  }
 }
+```
+
+### 2b) Codex-acp OAuth wrapper
+
+`/home/simon/.local/bin/codex-acp-oauth`:
+```bash
+#!/usr/bin/env bash
+unset OPENAI_API_KEY
+unset CODEX_API_KEY
+exec /home/simon/.npm/_npx/<hash>/node_modules/@zed-industries/codex-acp-linux-x64/bin/codex-acp \
+  -c 'sandbox_permissions=["disk-full-read-access","disk-write-access","network-full-access"]' "$@"
+```
+
+**Why:** Codex-acp defaults to `read-only` mode. The `-c sandbox_permissions` flag attempts to override, but currently codex-acp may not honor it — so `acpx codex set-mode full-access` after session creation is the reliable path.
+
+### 2c) Codex CLI config
+
+In `~/.codex/config.toml`:
+```toml
+model = "gpt-5.3-codex"
+sandbox_permissions = [
+  "disk-full-read-access",
+  "disk-write-access",
+  "network-full-access",
+]
 ```
 
 ### 3) OpenCode default model
@@ -164,18 +205,11 @@ Expected: credentials listed (for example OpenAI oauth, Anthropic oauth).
 
 ## Blue-builder ACP orchestration policy
 
-Behavior is controlled by ACP router skill text, not only `openclaw.json`:
+Default (AGENTS.md contract):
 
-- Skill file:
-  `~/.npm-global/lib/node_modules/openclaw/extensions/acpx/skills/acp-router/SKILL.md`
-
-Desired default behavior in that skill:
-
-- `runtime: "acp"`
-- `thread: false`
-- `mode: "run"`
-
-Use `thread: true` + `mode: "session"` only for explicit persistent-thread requests.
+- `runtime: "acp"`, `agentId: "codex"`, `mode: "session"`, `thread: true`
+- Registry → spawn → attach → brief → follow-up in same session → close-task.sh → close session
+- One-shot (`mode: run`, `thread: false`) only for quick exploratory probes outside task scope
 
 Agent-to-agent policy note:
 
@@ -233,8 +267,8 @@ Expected: returned text and file contents equal `BLUE_BUILDER_ACP_OK`.
 
 ### B) ACP feels "stuck" / fragmented
 
-- Common cause: orchestration defaults creating persistent thread-bound sessions.
-- Fix: enforce ACP router default to one-shot (`thread: false`, `mode: run`).
+- Common cause: stale registry entries, dead sessions, or rate-limited providers.
+- Fix: run `check.sh`, fail stale registry entries, restart gateway to clear accounting, then retry.
 
 ### B2) ACP one-shot succeeded but no text result visible to blue-builder
 

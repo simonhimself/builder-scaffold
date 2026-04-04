@@ -18,9 +18,12 @@
 
 ## ACP / Multi-Agent Build Runtime
 - ACP backend: `acpx`
-- default agent: `opencode`
+- default agent: `codex` (via `@zed-industries/codex-acp`, ChatGPT Plus OAuth)
 - allowed agents: `pi`, `claude`, `codex`, `opencode`, `gemini`
 - override behavior: explicit agentId in sessions_spawn overrides the default agent
+- codex wrapper: `/home/simon/.local/bin/codex-acp-oauth` (unsets API keys, calls binary directly with sandbox_permissions)
+- **Post-spawn required:** `acpx codex set-mode full-access --session <key>` before sending work
+- Permission config: `permissionMode=approve-all`, `nonInteractivePermissions=deny`
 
 ## Models & Aliases
 - **opus** → anthropic/claude-opus-4-6
@@ -32,12 +35,13 @@
 ## Model Switch Helpers (ACP)
 - Codex medium: /home/simon/.openclaw/workspace-builder/scripts/set-model-codex.sh
 - Claude Opus 4.6 thinking: /home/simon/.openclaw/workspace-builder/scripts/set-model-claude.sh
-- Pattern: run one helper first, then spawn ACP one-shot.
+- Pattern: run one helper first, then spawn ACP per-task persistent session (`agentId: codex`, `mode: session`, `thread: true`) when Builder needs mid-task dialogue/steering.
 
 ## Auth (Builder-relevant)
-- Anthropic: OAuth (OpenCode auth store)
-- OpenAI: OAuth (OpenCode auth store)
-- OpenAI API key: optional via `OPENAI_API_KEY` when intentionally using API-key auth
+- **Builder model (gpt-5.3-codex / claude-opus-4-6):** OpenClaw gateway OAuth profiles (`openai-codex:default`, `anthropic:default`)
+- **ACP codex agent:** ChatGPT Plus OAuth via `~/.acpx/config.json` `auth.chatgpt` token. NOT API key.
+- **OpenCode (if used):** OAuth via `~/.local/share/opencode/auth.json`
+- **OpenAI API key** (`~/.codex/auth.json`): exists but NOT used for ACP codex. Only for direct API calls (e.g., app LLM_API_KEY in .dev.vars).
 
 ## Bird / X (kept for market research)
 - Authenticated as **@simonhimself**
