@@ -5,6 +5,11 @@ Use them as references for quality and structure when writing your own `PRD.md`,
 
 ## Included examples
 
+- `couchpilot/` — end-to-end shipped planning + execution tracking
+  - PRD with kickoff contract, locked decisions, and clear scope boundaries
+  - SPEC with workstreams and cross-cutting quality requirements
+  - TASKS with full closure metadata (tests, verification evidence, final commits)
+
 - `rapidintel/` — architecture-heavy Cloudflare product planning
   - Strong PRD persona framing + signal-quality guardrails
   - Deep SPEC covering D1/DO/Queues/Workflows patterns
