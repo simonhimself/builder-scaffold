@@ -6,6 +6,7 @@ Portable scaffolding for the Blue Builder orchestration system.
 - Core orchestration contracts (`AGENTS.md`, `HEARTBEAT.md`, `TOOLS.md`, `BOOTSTRAP.md`)
 - Deterministic automation scripts (`scripts/*.sh`)
 - Project planning templates (`projects/_templates/*.md`)
+- Project planning examples (`projects/examples/*`)
 - Runtime state contract docs and schemas (`documentation/`, `state/schemas/`, `state/fixtures/`)
 
 ## What this repo intentionally excludes
